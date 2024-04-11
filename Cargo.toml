@@ -23,6 +23,7 @@ features = ["getrandom"]
 
 [dev-dependencies]
 pqc_core = {version = "0.3.0", features = ["load"]}
+hex = "0.4.3"
 
 [features]
 # Produces a random signature everytime when signing the same message.

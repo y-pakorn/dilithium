@@ -137,17 +137,18 @@ pub fn unpack_sig(
   // Decode h
   let mut k = 0usize;
   for i in 0..K {
-    if sig[idx + OMEGA + i] < k as u8 || sig[idx + OMEGA + i] > OMEGA_U8 {
+    let sigidxomgi = sig[idx + OMEGA + i];
+    if sigidxomgi < k as u8 || sigidxomgi > OMEGA_U8 {
       return Err(SignError::Input);
     }
-    for j in k..sig[idx + OMEGA + i] as usize {
+    for j in k..sigidxomgi as usize {
       // Coefficients are ordered for strong unforgeability
       if j > k && sig[idx + j as usize] <= sig[idx + j as usize - 1] {
         return Err(SignError::Input);
       }
       h.vec[i].coeffs[sig[idx + j] as usize] = 1;
     }
-    k = sig[idx + OMEGA + i] as usize;
+    k = sigidxomgi as usize;
   }
 
   // Extra indices are zero for strong unforgeability
