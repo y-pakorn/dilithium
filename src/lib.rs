@@ -1,5 +1,3 @@
-#[cfg(feature = "aes")]
-mod aes256ctr;
 mod api;
 mod fips202;
 mod ntt;

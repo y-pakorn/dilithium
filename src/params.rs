@@ -1,16 +1,11 @@
-#[cfg(feature = "mode2")]
-mod mode_2;
-#[cfg(not(any(feature = "mode2", feature = "mode5")))]
-mod mode_3;
-#[cfg(feature = "mode5")]
-mod mode_5;
-
-#[cfg(feature = "mode2")]
-pub use mode_2::*;
-#[cfg(not(any(feature = "mode2", feature = "mode5")))]
-pub use mode_3::*;
-#[cfg(feature = "mode5")]
-pub use mode_5::*;
+pub const K: usize = 4;
+pub const L: usize = 4;
+pub const ETA: usize = 2;
+pub const TAU: usize = 39;
+pub const BETA: usize = 78;
+pub const GAMMA1: usize = 1 << 17;
+pub const GAMMA2: usize = (Q - 1) / 88;
+pub const OMEGA: usize = 80;
 
 pub const SEEDBYTES: usize = 32;
 pub const CRHBYTES: usize = 64;
@@ -23,17 +18,10 @@ pub const POLYT1_PACKEDBYTES: usize = 320;
 pub const POLYT0_PACKEDBYTES: usize = 416;
 pub const POLYVECH_PACKEDBYTES: usize = OMEGA + K;
 
-pub const POLYZ_PACKEDBYTES: usize =
-  if cfg!(feature = "mode2") { 576 } else { 640 };
-pub const POLYW1_PACKEDBYTES: usize =
-  if cfg!(feature = "mode2") { 192 } else { 128 };
+pub const POLYZ_PACKEDBYTES: usize = 576;
+pub const POLYW1_PACKEDBYTES: usize = 192;
 
-pub const POLYETA_PACKEDBYTES: usize =
-  if cfg!(not(any(feature = "mode2", feature = "mode5"))) {
-    128
-  } else {
-    96
-  };
+pub const POLYETA_PACKEDBYTES: usize = 96;
 
 // Concise types to avoid cast cluttering
 pub const Q_I32: i32 = Q as i32;

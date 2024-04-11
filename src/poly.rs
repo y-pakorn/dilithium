@@ -4,7 +4,7 @@ use crate::{
 
 const D_SHL: i32 = 1i32 << (D - 1);
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Poly {
   pub coeffs: [i32; N],
 }
@@ -250,6 +250,7 @@ pub fn poly_uniform_eta(a: &mut Poly, seed: &[u8], nonce: u16) {
   let buflen = POLY_UNIFORM_ETA_NBLOCKS * STREAM256_BLOCKBYTES;
   let mut buf = [0u8; POLY_UNIFORM_ETA_NBLOCKS * STREAM256_BLOCKBYTES];
   let mut state = Stream256State::default();
+
   stream256_init(&mut state, seed, nonce);
   stream256_squeezeblocks(
     &mut buf,

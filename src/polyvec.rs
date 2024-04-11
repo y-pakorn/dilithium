@@ -1,7 +1,7 @@
 use crate::params::*;
 use crate::poly::*;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Polyveck {
   pub vec: [Poly; K],
 }
@@ -14,7 +14,7 @@ impl Default for Polyveck {
   }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Polyvecl {
   pub vec: [Poly; L],
 }

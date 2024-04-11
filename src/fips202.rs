@@ -1,6 +1,5 @@
 #![allow(clippy::needless_range_loop)]
 
-#[cfg(not(feature = "aes"))]
 pub const SHAKE128_RATE: usize = 168;
 pub const SHAKE256_RATE: usize = 136;
 
@@ -23,7 +22,7 @@ impl Default for KeccakState {
 }
 
 impl KeccakState {
-  pub fn init(&mut self) {
+  pub fn _init(&mut self) {
     self.s.fill(0);
     self.pos = 0;
   }
@@ -439,14 +438,12 @@ fn keccak_squeezeblocks(
 }
 
 /// Description: Absorb step of the SHAKE128 XOF; incremental.
-#[cfg(not(feature = "aes"))]
-pub fn shake128_absorb(state: &mut KeccakState, input: &[u8], inlen: usize) {
+pub fn _shake128_absorb(state: &mut KeccakState, input: &[u8], inlen: usize) {
   keccak_absorb(state, SHAKE128_RATE, input, inlen);
 }
 
 /// Finalize absorb step of the SHAKE128 XOF.
-#[cfg(not(feature = "aes"))]
-pub fn shake128_finalize(state: &mut KeccakState) {
+pub fn _shake128_finalize(state: &mut KeccakState) {
   keccak_finalize(&mut state.s, state.pos as usize, SHAKE128_RATE, 0x1F);
   state.pos = SHAKE128_RATE;
 }
@@ -455,8 +452,7 @@ pub fn shake128_finalize(state: &mut KeccakState) {
 ///  SHAKE128_RATE bytes each. Can be called multiple times
 ///  to keep squeezing. Assumes new block has not yet been
 ///  started (state->pos = SHAKE128_RATE).
-#[cfg(not(feature = "aes"))]
-pub fn shake128_squeezeblocks(
+pub fn _shake128_squeezeblocks(
   output: &mut [u8],
   nblocks: usize,
   s: &mut KeccakState,

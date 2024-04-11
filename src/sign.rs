@@ -1,3 +1,5 @@
+use tiny_keccak::{Hasher, Keccak};
+
 use crate::{
   fips202::*, packing::*, params::*, poly::*, polyvec::*, randombytes::*,
   SignError,
@@ -58,7 +60,12 @@ pub fn crypto_sign_keypair(
   pack_pk(pk, &rho, &t1);
 
   // Compute H(rho, t1) and write secret key
-  shake256(&mut tr, SEEDBYTES, pk, PUBLICKEYBYTES);
+  // tr = keccak256(pk)
+  let mut hasher = Keccak::v256();
+  hasher.update(&pk);
+  hasher.finalize(&mut tr);
+  //shake256(&mut tr, SEEDBYTES, pk, PUBLICKEYBYTES);
+
   pack_sk(sk, &rho, &tr, &key, &t0, &s1, &s2);
 
   return 0;
@@ -75,7 +82,6 @@ pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
   let (mut w1, mut w0) = (Polyveck::default(), Polyveck::default());
   let mut h = Polyveck::default();
   let mut cp = Poly::default();
-  let mut state = KeccakState::default(); //shake256_init()
   let mut rho = [0u8; SEEDBYTES];
   let mut tr = [0u8; SEEDBYTES];
   let mut rhoprime = [0u8; CRHBYTES];
@@ -91,15 +97,31 @@ pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
   );
 
   // Compute CRH(tr, msg)
-  shake256_absorb(&mut state, &tr, SEEDBYTES);
-  shake256_absorb(&mut state, m, m.len());
-  shake256_finalize(&mut state);
-  shake256_squeeze(&mut keymu[SEEDBYTES..], CRHBYTES, &mut state);
+  // = keccak(tr, msg)
+  {
+    let mut hasher = Keccak::v256();
+    hasher.update(&tr);
+    hasher.update(m);
+    hasher.finalize(&mut keymu[SEEDBYTES..SEEDBYTES * 2]); // first 32 bytes of mu
+    let mut hasher = Keccak::v256();
+    hasher.update(&keymu[SEEDBYTES..SEEDBYTES * 2]); // first 32 bytes of mu
+    hasher.finalize(&mut keymu[SEEDBYTES * 2..]); // last 32 bytes of mu
+  }
+  //let mut state = KeccakState::default(); //shake256_init()
+  //shake256_absorb(&mut state, &tr, SEEDBYTES);
+  //shake256_absorb(&mut state, m, m.len());
+  //shake256_finalize(&mut state);
+  //shake256_squeeze(&mut keymu[SEEDBYTES..], CRHBYTES, &mut state);
 
   if RANDOMIZED_SIGNING {
     randombytes(&mut rhoprime, CRHBYTES);
   } else {
-    shake256(&mut rhoprime, CRHBYTES, &keymu, SEEDBYTES + CRHBYTES);
+    let mut hasher = Keccak::v256();
+    hasher.update(&keymu);
+    hasher.finalize(&mut rhoprime);
+    let mut hasher = Keccak::v256();
+    hasher.update(&rhoprime);
+    hasher.finalize(&mut rhoprime);
   }
 
   // Expand matrix and transform vectors
@@ -125,11 +147,16 @@ pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
     polyveck_decompose(&mut w1, &mut w0);
     polyveck_pack_w1(sig, &w1);
 
-    state.init();
-    shake256_absorb(&mut state, &keymu[SEEDBYTES..], CRHBYTES);
-    shake256_absorb(&mut state, &sig, K * POLYW1_PACKEDBYTES);
-    shake256_finalize(&mut state);
-    shake256_squeeze(sig, SEEDBYTES, &mut state);
+    //let mut state = KeccakState::default(); //shake256_init()
+    //shake256_absorb(&mut state, &keymu[SEEDBYTES..], CRHBYTES);
+    //shake256_absorb(&mut state, &sig, K * POLYW1_PACKEDBYTES);
+    //shake256_finalize(&mut state);
+    //shake256_squeeze(sig, SEEDBYTES, &mut state);
+    let mut hasher = Keccak::v256();
+    hasher.update(&keymu[SEEDBYTES..]);
+    hasher.update(&sig[..K * POLYW1_PACKEDBYTES]);
+    hasher.finalize(&mut sig[..SEEDBYTES]);
+
     poly_challenge(&mut cp, sig);
     poly_ntt(&mut cp);
 
@@ -189,7 +216,6 @@ pub fn crypto_sign_verify(
     Polyveck::default(),
     Polyveck::default(),
   );
-  let mut state = KeccakState::default(); // shake256_init()
 
   if sig.len() != SIGNBYTES {
     return Err(SignError::Input);
@@ -204,11 +230,28 @@ pub fn crypto_sign_verify(
   }
 
   // Compute CRH(CRH(rho, t1), msg)
-  shake256(&mut mu, SEEDBYTES, pk, PUBLICKEYBYTES);
-  shake256_absorb(&mut state, &mu, SEEDBYTES);
-  shake256_absorb(&mut state, m, m.len());
-  shake256_finalize(&mut state);
-  shake256_squeeze(&mut mu, CRHBYTES, &mut state);
+  // == keccak(tr, msg)
+  // == keccak(keccak(pk), msg)
+  {
+    let mut tr = [0u8; SEEDBYTES];
+    let mut hasher = Keccak::v256();
+    hasher.update(&pk);
+    hasher.finalize(&mut tr);
+    let mut hasher = Keccak::v256();
+    hasher.update(&tr);
+    hasher.update(m);
+    hasher.finalize(&mut mu[..SEEDBYTES]);
+    let mut hasher = Keccak::v256();
+    hasher.update(&mu[..SEEDBYTES]);
+    hasher.finalize(&mut mu[SEEDBYTES..]);
+  }
+
+  //let mut state = KeccakState::default(); // shake256_init()
+  //shake256(&mut mu, SEEDBYTES, pk, PUBLICKEYBYTES);
+  //shake256_absorb(&mut state, &mu, SEEDBYTES);
+  //shake256_absorb(&mut state, m, m.len());
+  //shake256_finalize(&mut state);
+  //shake256_squeeze(&mut mu, CRHBYTES, &mut state);
 
   // Matrix-vector multiplication; compute Az - c2^dt1
   poly_challenge(&mut cp, &c);
@@ -233,11 +276,16 @@ pub fn crypto_sign_verify(
   polyveck_pack_w1(&mut buf, &w1);
 
   // Call random oracle and verify challenge
-  state.init();
-  shake256_absorb(&mut state, &mu, CRHBYTES);
-  shake256_absorb(&mut state, &buf, K * POLYW1_PACKEDBYTES);
-  shake256_finalize(&mut state);
-  shake256_squeeze(&mut c2, SEEDBYTES, &mut state);
+  let mut hasher = Keccak::v256();
+  hasher.update(&mu);
+  hasher.update(&buf);
+  hasher.finalize(&mut c2);
+  //let mut state = KeccakState::default(); // shake256_init()
+  //shake256_absorb(&mut state, &mu, CRHBYTES);
+  //shake256_absorb(&mut state, &buf, K * POLYW1_PACKEDBYTES);
+  //shake256_finalize(&mut state);
+  //shake256_squeeze(&mut c2, SEEDBYTES, &mut state);
+
   // Doesn't require constant time equality check
   if c != c2 {
     Err(SignError::Verify)
