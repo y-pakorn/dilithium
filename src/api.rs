@@ -4,7 +4,7 @@ use crate::sign::*;
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Keypair {
   pub public: [u8; PUBLICKEYBYTES],
-  secret: [u8; SECRETKEYBYTES],
+  pub secret: [u8; SECRETKEYBYTES],
 }
 
 /// Secret key elided

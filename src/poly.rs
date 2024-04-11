@@ -297,11 +297,10 @@ pub fn poly_uniform_gamma1(a: &mut Poly, seed: &[u8], nonce: u16) {
 pub fn poly_challenge(c: &mut Poly, seed: &[u8]) {
   let mut _signs = 0u64;
   let mut buf = [0u8; SHAKE256_RATE];
-  let mut state = KeccakState::default(); //shake256_init
 
-  shake256_absorb(&mut state, seed, SEEDBYTES);
-  shake256_finalize(&mut state);
-  shake256_squeezeblocks(&mut buf, 1, &mut state);
+  let mut state = Stream256State::default();
+  stream256_absorb(&mut state, &seed[..SEEDBYTES]);
+  stream256_squeezeblocks(&mut buf, 1, &mut state);
 
   for i in 0..8 {
     _signs |= (buf[i] as u64) << 8 * i;
@@ -313,7 +312,7 @@ pub fn poly_challenge(c: &mut Poly, seed: &[u8]) {
   for i in N - TAU..N {
     loop {
       if pos >= SHAKE256_RATE {
-        shake256_squeezeblocks(&mut buf, 1, &mut state);
+        stream256_squeezeblocks(&mut buf, 1, &mut state);
         pos = 0;
       }
       b = buf[pos] as usize;

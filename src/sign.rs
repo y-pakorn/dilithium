@@ -12,7 +12,13 @@ pub fn crypto_sign_keypair(
 ) -> u8 {
   let mut init_seed = [0u8; SEEDBYTES];
   match seed {
-    Some(x) => init_seed.copy_from_slice(x),
+    Some(x) => {
+      if x.len() < SEEDBYTES {
+        init_seed[..x.len()].copy_from_slice(x);
+      } else {
+        init_seed.copy_from_slice(x);
+      }
+    }
     None => randombytes(&mut init_seed, SEEDBYTES),
   };
   let mut seedbuf = [0u8; 2 * SEEDBYTES + CRHBYTES];

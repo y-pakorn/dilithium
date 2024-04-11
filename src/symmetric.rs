@@ -44,6 +44,13 @@ fn squeezebytes(state: &mut State, out: &mut [u8], outlen: usize) {
   }
 }
 
+fn absorb(state: &mut State, input: &[u8]) {
+  let mut hasher = Keccak::v256();
+  hasher.update(&state.s);
+  hasher.update(input);
+  hasher.finalize(&mut state.s);
+}
+
 pub fn stream128_init(state: &mut Stream128State, seed: &[u8], nonce: u16) {
   init(state, seed, nonce);
 }
@@ -56,6 +63,10 @@ pub fn stream128_squeezeblocks(
   squeezebytes(state, out, outblocks as usize * SHAKE128_RATE);
 }
 
+pub fn stream128_absorb(state: &mut Stream128State, input: &[u8]) {
+  absorb(state, input);
+}
+
 pub fn stream256_init(state: &mut Stream256State, seed: &[u8], nonce: u16) {
   init(state, seed, nonce);
 }
@@ -66,4 +77,8 @@ pub fn stream256_squeezeblocks(
   state: &mut Stream256State,
 ) {
   squeezebytes(state, out, outblocks as usize * SHAKE256_RATE);
+}
+
+pub fn stream256_absorb(state: &mut Stream256State, input: &[u8]) {
+  absorb(state, input);
 }
