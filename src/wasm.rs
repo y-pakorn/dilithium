@@ -19,10 +19,22 @@ pub fn keypair() -> Keys {
 }
 
 #[wasm_bindgen]
+pub fn keypair_derive(seed: Box<[u8]>) -> Keys {
+  Keys {
+    keypair: api::Keypair::derive(&seed),
+  }
+}
+
+#[wasm_bindgen]
 impl Keys {
   #[wasm_bindgen(constructor)]
   pub fn new() -> Keys {
     keypair()
+  }
+
+  #[wasm_bindgen]
+  pub fn derive(seed: Box<[u8]>) -> Keys {
+    keypair_derive(seed)
   }
 
   #[wasm_bindgen(getter)]

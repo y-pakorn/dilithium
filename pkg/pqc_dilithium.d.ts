@@ -5,6 +5,11 @@
 */
 export function keypair(): Keys;
 /**
+* @param {Uint8Array} seed
+* @returns {Keys}
+*/
+export function keypair_derive(seed: Uint8Array): Keys;
+/**
 * @param {Uint8Array} sig
 * @param {Uint8Array} msg
 * @param {Uint8Array} public_key
@@ -18,6 +23,11 @@ export class Keys {
 /**
 */
   constructor();
+/**
+* @param {Uint8Array} seed
+* @returns {Keys}
+*/
+  static derive(seed: Uint8Array): Keys;
 /**
 * @param {Uint8Array} msg
 * @returns {Uint8Array}
