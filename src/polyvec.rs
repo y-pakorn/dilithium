@@ -1,8 +1,11 @@
-use crate::params::*;
-use crate::poly::*;
+use serde::{Deserialize, Serialize};
+use serde_big_array::BigArray;
 
-#[derive(Debug, Copy, Clone)]
+use crate::{params::*, poly::*};
+
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Polyveck {
+  #[serde(with = "BigArray")]
   pub vec: [Poly; K],
 }
 
@@ -14,8 +17,9 @@ impl Default for Polyveck {
   }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Polyvecl {
+  #[serde(with = "BigArray")]
   pub vec: [Poly; L],
 }
 

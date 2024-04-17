@@ -4,6 +4,7 @@ extern crate alloc;
 use super::*;
 use crate::params::{PUBLICKEYBYTES, SECRETKEYBYTES, SIGNBYTES};
 use alloc::boxed::Box;
+use serde_json::to_string;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -48,8 +49,26 @@ impl Keys {
   }
 
   #[wasm_bindgen]
-  pub fn sign(&self, msg: Box<[u8]>) -> Box<[u8]> {
+  pub fn sign_bytes(&self, msg: Box<[u8]>) -> Box<[u8]> {
     Box::new(self.keypair.sign(&msg))
+  }
+
+  #[wasm_bindgen]
+  pub fn sign_json(&self, msg: &str) -> String {
+    let sig = Keypair::sig_from_bytes(self.keypair.sign(msg.as_bytes()))
+      .expect("Should not fail");
+    to_string(&sig).expect("Should not fail")
+  }
+
+  #[wasm_bindgen]
+  pub fn pk_json(&self) -> String {
+    to_string(&self.keypair.pk()).expect("Should serialize pk")
+  }
+
+  #[wasm_bindgen]
+  pub fn expanded_pk_json(&self) -> String {
+    to_string(&self.keypair.expanded_pk())
+      .expect("Should serialize expanded pk")
   }
 }
 

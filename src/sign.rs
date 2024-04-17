@@ -10,17 +10,12 @@ pub fn crypto_sign_keypair(
   sk: &mut [u8],
   seed: Option<&[u8]>,
 ) -> u8 {
-  let mut init_seed = [0u8; SEEDBYTES];
-  match seed {
-    Some(x) => {
-      if x.len() < SEEDBYTES {
-        init_seed[..x.len()].copy_from_slice(x);
-      } else {
-        init_seed.copy_from_slice(x);
-      }
-    }
-    None => randombytes(&mut init_seed, SEEDBYTES),
-  };
+  let mut random_seed = [0u8; CRHBYTES];
+  let init_seed = seed.unwrap_or_else(|| {
+    randombytes(&mut random_seed, CRHBYTES);
+    &random_seed
+  });
+
   let mut seedbuf = [0u8; 2 * SEEDBYTES + CRHBYTES];
   let mut tr = [0u8; SEEDBYTES];
   let (mut rho, mut rhoprime, mut key) =
@@ -38,7 +33,7 @@ pub fn crypto_sign_keypair(
     &mut seedbuf,
     2 * SEEDBYTES + CRHBYTES,
     &init_seed,
-    SEEDBYTES,
+    init_seed.len(),
   );
   rho.copy_from_slice(&seedbuf[..SEEDBYTES]);
   rhoprime.copy_from_slice(&seedbuf[SEEDBYTES..SEEDBYTES + CRHBYTES]);

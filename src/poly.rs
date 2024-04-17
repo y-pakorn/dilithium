@@ -1,11 +1,15 @@
+use serde::{Deserialize, Serialize};
+use serde_big_array::BigArray;
+
 use crate::{
   fips202::*, ntt::*, params::*, reduce::*, rounding::*, symmetric::*,
 };
 
 const D_SHL: i32 = 1i32 << (D - 1);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Poly {
+  #[serde(with = "BigArray")]
   pub coeffs: [i32; N],
 }
 
