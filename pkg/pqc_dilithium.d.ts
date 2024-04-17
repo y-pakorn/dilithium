@@ -32,7 +32,20 @@ export class Keys {
 * @param {Uint8Array} msg
 * @returns {Uint8Array}
 */
-  sign(msg: Uint8Array): Uint8Array;
+  sign_bytes(msg: Uint8Array): Uint8Array;
+/**
+* @param {string} msg
+* @returns {string}
+*/
+  sign_json(msg: string): string;
+/**
+* @returns {string}
+*/
+  pk_json(): string;
+/**
+* @returns {string}
+*/
+  expanded_pk_json(): string;
 /**
 */
   readonly pubkey: Uint8Array;
