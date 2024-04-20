@@ -30,14 +30,16 @@ export class Keys {
   static derive(seed: Uint8Array): Keys;
 /**
 * @param {Uint8Array} msg
+* @param {boolean} random
 * @returns {Uint8Array}
 */
-  sign_bytes(msg: Uint8Array): Uint8Array;
+  sign_bytes(msg: Uint8Array, random: boolean): Uint8Array;
 /**
-* @param {string} msg
+* @param {Uint8Array} msg
+* @param {boolean} random
 * @returns {string}
 */
-  sign_json(msg: string): string;
+  sign_json(msg: Uint8Array, random: boolean): string;
 /**
 * @returns {string}
 */

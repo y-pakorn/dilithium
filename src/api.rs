@@ -68,9 +68,9 @@ impl Keypair {
     Keypair { public, secret }
   }
 
-  pub fn sign(&self, msg: &[u8]) -> [u8; SIGNBYTES] {
+  pub fn sign(&self, msg: &[u8], random: bool) -> [u8; SIGNBYTES] {
     let mut sig = [0u8; SIGNBYTES];
-    crypto_sign_signature(&mut sig, msg, &self.secret);
+    crypto_sign_signature(&mut sig, msg, &self.secret, random);
     sig
   }
 

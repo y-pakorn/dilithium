@@ -49,13 +49,13 @@ impl Keys {
   }
 
   #[wasm_bindgen]
-  pub fn sign_bytes(&self, msg: Box<[u8]>) -> Box<[u8]> {
-    Box::new(self.keypair.sign(&msg))
+  pub fn sign_bytes(&self, msg: Box<[u8]>, random: bool) -> Box<[u8]> {
+    Box::new(self.keypair.sign(&msg, random))
   }
 
   #[wasm_bindgen]
-  pub fn sign_json(&self, msg: &str) -> String {
-    let sig = Keypair::sig_from_bytes(self.keypair.sign(msg.as_bytes()))
+  pub fn sign_json(&self, msg: Box<[u8]>, random: bool) -> String {
+    let sig = Keypair::sig_from_bytes(self.keypair.sign(&msg, random))
       .expect("Should not fail");
     to_string(&sig).expect("Should not fail")
   }

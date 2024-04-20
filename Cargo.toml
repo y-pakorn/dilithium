@@ -30,13 +30,6 @@ features = ["getrandom"]
 pqc_core = {version = "0.3.0", features = ["load"]}
 
 [features]
-# Produces a random signature everytime when signing the same message.
-# One may want to consider randomized signatures in situations where the side channel
-# attacks exploiting determinism are applicable. Another situation
-# where one may want to avoid determinism is when the signer does not wish to reveal the
-# message that is being signed.
-random_signing = []
-
 # For compiling to wasm targets 
 wasm = ["wasm-bindgen", "getrandom/js"]
 

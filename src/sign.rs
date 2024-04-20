@@ -72,7 +72,12 @@ pub fn crypto_sign_keypair(
   return 0;
 }
 
-pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
+pub fn crypto_sign_signature(
+  sig: &mut [u8],
+  m: &[u8],
+  sk: &[u8],
+  random: bool,
+) {
   // `key` and `mu` are concatenated
   let mut keymu = [0u8; SEEDBYTES + CRHBYTES];
 
@@ -114,7 +119,7 @@ pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
   //shake256_finalize(&mut state);
   //shake256_squeeze(&mut keymu[SEEDBYTES..], CRHBYTES, &mut state);
 
-  if RANDOMIZED_SIGNING {
+  if random {
     randombytes(&mut rhoprime, CRHBYTES);
   } else {
     let mut hasher = Keccak::v256();
@@ -122,7 +127,7 @@ pub fn crypto_sign_signature(sig: &mut [u8], m: &[u8], sk: &[u8]) {
     hasher.finalize(&mut rhoprime);
     let mut hasher = Keccak::v256();
     hasher.update(&rhoprime);
-    hasher.finalize(&mut rhoprime);
+    hasher.finalize(&mut rhoprime[32..]);
   }
 
   // Expand matrix and transform vectors
