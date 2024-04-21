@@ -88,7 +88,7 @@ impl Keypair {
     let mut rho = [0u8; SEEDBYTES];
     let mut t1 = Polyveck::default();
 
-    unpack_pk(&mut rho, &mut t1, &self.secret);
+    unpack_pk(&mut rho, &mut t1, &self.public);
 
     PublicKey { rho, t1 }
   }
